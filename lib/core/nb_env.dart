@@ -64,7 +64,7 @@ class NbEnv {
     print('Installing kernel');
     final python = path.join(workingDirectory, '.venv', 'scripts', 'python');
     final pip = path.join(workingDirectory, '.venv', 'scripts', 'pip3');
-    await installLibs(pip, workingDirectory, ['ipykernel', 'nbformat', 'nbclient']);
+    await installLibs(pip, workingDirectory, ['ipykernel', 'nbformat', 'nbclient', 'sentence-transformers']);
     print('Setting up Jupyter kernel...');
     await Process.run(python, [
       '-m',

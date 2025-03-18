@@ -17,6 +17,7 @@ class NbParser {
       description: [],
       source: [],
       answer: [],
+      images: [],
       isCheckSource: false,
       isCheckAnswer: false,
       scorePoints: 0,
@@ -35,6 +36,15 @@ class NbParser {
               .map((o) => o!.data)
               .expand((o) => o)
               .toList(),
+          images: cell.outputs
+              .where((o) => o.type == CellOutputType.display)
+              .map((o) => o as CellOutputDisplayData)
+              .where((o) => o.imageData != null)
+              .map((o) => o.imageData)
+              .map((o) => o!.data)
+              .expand((o) => o)
+              .map((o) => o.replaceAll(RegExp(r'\s+'), ''))
+              .toList(),
         );
         tasks.add(currTask);
         currTask = PythonTask(
@@ -49,7 +59,6 @@ class NbParser {
     }
     return tasks;
   }
-
 
   static Notebook parseJsonToNotebook(String filename, Map<String, dynamic> json) {
     var metadata = json['metadata'] ?? {};

@@ -51,9 +51,39 @@ class NbRunner {
     }
   }
 
+  Future<void> checkSimilarity() async {
+    final score = {};
+    for (int i = 0; i < works.length; i++) {
+      print('Work $i');
+
+      for (int j = i + 1; j < works.length; j++) {
+        final scores = [];
+        print('Compare to $j');
+        final tasksA = works[i].tasks;
+        final tasksB = works[j].tasks;
+        for (int k = 0; k < tasksA.length; k++) {
+          print('Task $k');
+          if (!tasksA[k].isCheckSource) {
+            var result = await Process.run(python, [
+              'plagiarism.py',
+              tasksA[k].source?.join('') ?? 'A',
+              tasksB[k].source?.join('') ?? 'B',
+            ]);
+            print(double.tryParse(result.stdout) ?? 0.0);
+            scores.add(double.tryParse(result.stdout) ?? 0.0);
+            print('Add');
+          }
+        }
+        score['$i-$j'] = scores;
+      }
+
+    }
+    print(score);
+  }
+
   Future<bool> run(int workIndex) async {
     var result = await Process.run(python, [
-      'simple.py',
+      'executor.py',
       path.join(workingDirectory, works[workIndex].notebookFilename),
       kernelName
     ]);

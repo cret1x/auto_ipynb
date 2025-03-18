@@ -230,6 +230,10 @@ class _TemplateCreateEditScreen extends ConsumerState<TemplateCreateEditScreen> 
                 ],
               ),
             ),
+            const SizedBox(
+              height: 10,
+            ),
+            if (task.images != null && task.images!.isNotEmpty) Image.memory(base64Decode(task.images!.first))
           ],
         ),
       ),

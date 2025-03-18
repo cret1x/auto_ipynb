@@ -7,6 +7,7 @@ class PythonTask {
   final List<String>? description;
   final List<String>? source;
   final List<String>? answer;
+  final List<String>? images;
   final bool isCheckSource;
   final bool isCheckAnswer;
   final double scorePoints;
@@ -18,6 +19,7 @@ class PythonTask {
     this.description,
     this.source,
     this.answer,
+    this.images,
   });
 
   factory PythonTask.fromJson(Map<String, dynamic> json) => _$PythonTaskFromJson(json);
@@ -28,6 +30,7 @@ class PythonTask {
     List<String>? description,
     List<String>? source,
     List<String>? answer,
+    List<String>? images,
     bool? isCheckSource,
     bool? isCheckAnswer,
     double? scorePoints,
@@ -36,6 +39,7 @@ class PythonTask {
       description: description ?? this.description,
       source: source ?? this.source,
       answer: answer ?? this.answer,
+      images: images ?? this.images,
       isCheckSource: isCheckSource ?? this.isCheckSource,
       isCheckAnswer: isCheckAnswer ?? this.isCheckAnswer,
       scorePoints: scorePoints ?? this.scorePoints,

@@ -78,7 +78,7 @@ class _CreateProjectWidgetState extends ConsumerState<CreateProjectWidget> {
   void onCreatePressed() async {
     if (_sourceFile != null && _selectedTemplate != null) {
       Project project = await NbEnv.createNewProject(_sourceFile!, _selectedTemplate!);
-      ref.read(projectsProvider.notifier).save(project);
+      await ref.read(projectsProvider.notifier).save(project);
       if (mounted) {
         Navigator.push(
           context,

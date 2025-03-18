@@ -152,6 +152,8 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                     const SizedBox(height: 10),
                     ElevatedButton(onPressed: checkOutputs, child: const Text("Check all")),
                     const SizedBox(height: 10),
+                    ElevatedButton(onPressed: checkPlagiarism, child: const Text("Check plagiarism")),
+                    const SizedBox(height: 10),
                     ElevatedButton(onPressed: createExecutionResult, child: const Text("Create execution result"))
                   ],
                 ),
@@ -180,6 +182,10 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
       }
     }
     ref.read(projectsProvider.notifier).save(widget.project);
+  }
+
+  void checkPlagiarism() async {
+    await runner.checkSimilarity();
   }
 
   void startRunner() async {
