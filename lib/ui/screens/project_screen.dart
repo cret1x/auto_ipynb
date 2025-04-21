@@ -296,7 +296,7 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Task Similarity Results',
+                        'Результат проверки на плагиат',
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
