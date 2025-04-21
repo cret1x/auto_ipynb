@@ -8,9 +8,11 @@ class ExceptionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      title: Text(object.toString()),
-      children: [Text(trace.toString(), overflow: TextOverflow.fade,)],
+    return SelectionArea(
+      child: ExpansionTile(
+        title: Text(object.toString()),
+        children: [Text(trace.toString(), overflow: TextOverflow.fade,)],
+      ),
     );
   }
 }

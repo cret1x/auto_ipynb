@@ -36,8 +36,9 @@ class NbEnv {
     }
     return Project(
       id: projectId,
-      name: 'Unnamed',
+      name: 'Новый проект',
       rootPath: projectDir.path,
+      libraries: ['ipykernel', 'nbformat', 'nbclient'],
       studentWorks: List.of(filesList.map((f) => fromFile(projectDir.path, f))),
       template: template,
     );
@@ -49,7 +50,11 @@ class NbEnv {
     Map<String, dynamic> json = jsonDecode(jsonString);
     final notebook = NbParser.parseJsonToNotebook(filename, json);
     final tasks = NbParser.getTasksFromNotebook(notebook);
-    return StudentWork(notebookFilename: filename, tasks: tasks, status: RunStatus.pending);
+    return StudentWork(
+        notebookFilename: filename,
+        errors: null,
+        tasks: tasks,
+        status: RunStatus.pending);
   }
 
   static Future<void> createPythonEnvironment(String pythonExe, String workingDirectory) async {
@@ -64,17 +69,10 @@ class NbEnv {
     print('Installing kernel');
     final python = path.join(workingDirectory, '.venv', 'scripts', 'python');
     final pip = path.join(workingDirectory, '.venv', 'scripts', 'pip3');
-    await installLibs(pip, workingDirectory, ['ipykernel', 'nbformat', 'nbclient', 'sentence-transformers']);
+    await installLibs(pip, workingDirectory, ['ipykernel', 'nbformat', 'nbclient']);
     print('Setting up Jupyter kernel...');
-    await Process.run(python, [
-      '-m',
-      'ipykernel',
-      'install',
-      '--user',
-      '--name=$kernelName',
-      '--display-name',
-      'Python ($kernelName)'
-    ]);
+    await Process.run(python,
+        ['-m', 'ipykernel', 'install', '--user', '--name=$kernelName', '--display-name', 'Python ($kernelName)']);
   }
 
   static Future<void> installLibs(String pipExe, String workingDirectory, List<String> libs) async {

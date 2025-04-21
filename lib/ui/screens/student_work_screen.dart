@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:auto_ipynb/data/model/student_work.dart';
 import 'package:auto_ipynb/data/model/template.dart';
+import 'package:auto_ipynb/ui/common/action_button.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -19,13 +23,87 @@ class StudentWorkScreen extends ConsumerStatefulWidget {
 class _StudentWorkScreen extends ConsumerState<StudentWorkScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: ListView.builder(
-        itemCount: widget.studentWork.tasks.length,
-        itemBuilder: (context, index) => _getTaskCard(index),
+    return SelectionArea(
+      child: Scaffold(
+        appBar: AppBar(title: Text(widget.studentWork.notebookFilename),),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  ActionButton(onClick: createReport, child: const Text("Создать отчет проверки")),
+                ],
+              ),
+              if (widget.studentWork.errors != null) Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ExpansionTile(
+                  title: Text("Ошибки"),
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(widget.studentWork.errors!),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  primary: false,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: widget.studentWork.tasks.length,
+                  itemBuilder: (context, index) => _getTaskCard(index),
+                ),
+              )
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  Future<void> createReport() async {
+    String text = "";
+    if (widget.studentWork.errors != null) {
+      text += widget.studentWork.errors!;
+      text += "\n\n";
+    }
+    for (int i = 0; i < widget.studentWork.tasks.length; i++) {
+      var task = widget.studentWork.tasks[i];
+      text += "Задание:\n";
+      text += task.description?.join('') ?? '';
+      text += "\n";
+      text += "Исходный код:\n";
+      text += task.source?.join('') ?? '';
+      text += "\n";
+      if (widget.template.tasks[i].isCheckSource) {
+        text += "Правильный код:\n";
+        text += widget.template.tasks[i].source?.join('') ?? '';
+        text += "\n";
+      }
+      text += "Ответ:\n";
+      text += task.answer?.join('') ?? '';
+      text += "\n";
+      if (widget.template.tasks[i].isCheckSource) {
+        text += "Правильный ответ:\n";
+        text += widget.template.tasks[i].source?.join('') ?? '';
+        text += "\n";
+      }
+      text += "\n\n";
+    }
+
+    String? outputFile = await FilePicker.platform.saveFile(
+      dialogTitle: 'Выберите место сохранения файла:',
+      fileName: '${widget.studentWork.notebookFilename}-report.log',
+    );
+    if (outputFile != null) {
+      File file = File(outputFile);
+      await file.writeAsString(text);
+      print("File $outputFile exported successfully!");
+    }
   }
 
   Widget _getTaskCard(int taskIndex) {
@@ -34,7 +112,7 @@ class _StudentWorkScreen extends ConsumerState<StudentWorkScreen> {
       return const Card(
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: Text("No such task in template!"),
+          child: Text("Такого задания нет в шаблоне"),
         ),
       );
     }
@@ -81,13 +159,13 @@ class _StudentWorkScreen extends ConsumerState<StudentWorkScreen> {
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.blueGrey,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
               padding: const EdgeInsets.all(8),
               child: Text(
                 task.source?.join('') ?? '',
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.black),
               ),
             ),
             const SizedBox(
@@ -98,7 +176,7 @@ class _StudentWorkScreen extends ConsumerState<StudentWorkScreen> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.green,
+                  color: Colors.green.shade100,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.all(8),

@@ -6,6 +6,7 @@ class Project {
   final String name;
   final String rootPath;
   final List<StudentWork> studentWorks; // Notebooks
+  final List<String> libraries; // Notebooks
   final Template template;
   final DateTime? lastRunTime;
 
@@ -14,6 +15,7 @@ class Project {
     required this.name,
     required this.rootPath,
     required this.studentWorks,
+    required this.libraries,
     required this.template,
     this.lastRunTime,
   });
@@ -36,6 +38,7 @@ class Project {
     studentWorks: (json['studentWorks'] as List<dynamic>)
         .map((e) => StudentWork.fromJson(e as Map<String, dynamic>))
         .toList(),
+    libraries: (json['libraries'] as List<dynamic>).cast<String>(),
     template: Template.fromJson(json['template'] as Map<String, dynamic>),
     lastRunTime: json['lastRunTime'] == null
         ? null
@@ -47,6 +50,7 @@ class Project {
     'name': name,
     'rootPath': rootPath,
     'studentWorks': studentWorks,
+    'libraries': libraries,
     'template': template,
     'lastRunTime': lastRunTime?.toIso8601String(),
   };

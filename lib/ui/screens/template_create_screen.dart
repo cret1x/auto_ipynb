@@ -24,33 +24,41 @@ class _TemplateCreateEditScreen extends ConsumerState<TemplateCreateEditScreen> 
   final _nameEditingController = TextEditingController();
   bool _isEditingName = false;
   final List<PythonTask> tasks = [];
+  var _editDesc = <bool>[];
 
   @override
   void initState() {
     super.initState();
-    _nameEditingController.text = 'New template';
+    _nameEditingController.text = 'Новый шаблон';
     if (widget.template != null) {
       _nameEditingController.text = widget.template!.name;
       tasks.addAll(widget.template!.tasks);
+      _editDesc = List.filled(tasks.length, false);
     } else if (widget.fileTemplate != null) {
       tasks.addAll(widget.fileTemplate!.tasks);
+      _editDesc = List.filled(tasks.length, false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _getDynamicAppBar(),
-      body: Column(
-        children: [
-          _getControlButtons(),
-          Expanded(
-            child: ListView.builder(
-              itemCount: tasks.length,
-              itemBuilder: (context, index) => _getTaskCard(index),
+    return SelectionArea(
+      child: Scaffold(
+        appBar: _getDynamicAppBar(),
+        body: Column(
+          children: [
+            _getControlButtons(),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.builder(
+                  itemCount: tasks.length,
+                  itemBuilder: (context, index) => _getTaskCard(index),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -77,7 +85,8 @@ class _TemplateCreateEditScreen extends ConsumerState<TemplateCreateEditScreen> 
 
   void addAnswer() {
     setState(() {
-      tasks.add(PythonTask(isCheckSource: false, isCheckAnswer: false, scorePoints: 0));
+      tasks.add(PythonTask(isCheckSource: false, isCheckAnswer: false, isCheckPlag: false, scorePoints: 0));
+      _editDesc.add(false);
     });
   }
 
@@ -116,14 +125,23 @@ class _TemplateCreateEditScreen extends ConsumerState<TemplateCreateEditScreen> 
   Widget _getControlButtons() {
     return Row(
       children: [
-        ElevatedButton(onPressed: saveTemplate, child: const Text("Save")),
-        ElevatedButton(onPressed: addAnswer, child: const Text("Add")),
+        ElevatedButton(onPressed: saveTemplate, child: const Text("Сохранить")),
+        const SizedBox(
+          width: 10,
+        ),
+        ElevatedButton(onPressed: addAnswer, child: const Text("Добавить задание")),
+        const SizedBox(
+          width: 10,
+        ),
         ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text("Cancel")),
-        ElevatedButton(onPressed: widget.template == null ? null : deleteTemplate, child: const Text("Delete")),
+            child: const Text("Отмена")),
+        const SizedBox(
+          width: 10,
+        ),
+        ElevatedButton(onPressed: widget.template == null ? null : deleteTemplate, child: const Text("Удалить")),
       ],
     );
   }
@@ -143,7 +161,17 @@ class _TemplateCreateEditScreen extends ConsumerState<TemplateCreateEditScreen> 
               children: [
                 Flexible(
                   flex: 10,
-                  child: MarkdownBody(
+                  child: _editDesc[taskIndex] ? TextFormField(
+                    initialValue: task.description?.join('') ?? '',
+                    maxLines: null,
+                    decoration: const InputDecoration(border: OutlineInputBorder()),
+                    style: const TextStyle(color: Colors.black),
+                    onChanged: (description) {
+                      setState(() {
+                        tasks[taskIndex] = task.copyWith(description: description.split('\n'));
+                      });
+                    },
+                  ) : MarkdownBody(
                     data: task.description?.join('') ?? '',
                     builders: {
                       'latex': LatexElementBuilder(),
@@ -156,29 +184,46 @@ class _TemplateCreateEditScreen extends ConsumerState<TemplateCreateEditScreen> 
                   ),
                 ),
                 Flexible(
-                  flex: 1,
-                  child: TextFormField(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                    initialValue: task.scorePoints.toString(),
-                    onChanged: (value) {
-                      setState(() {
-                        tasks[taskIndex] = task.copyWith(scorePoints: double.tryParse(value) ?? 0);
-                      });
-                    },
+                  flex: 2,
+                  child: Row(
+                    children: [
+                      Flexible(
+                        flex: 1,
+                        child: IconButton(
+                          icon: _editDesc[taskIndex] ? Icon(Icons.done) : Icon(Icons.edit),
+                          onPressed: () {
+                            setState(() {
+                              _editDesc[taskIndex] = !_editDesc[taskIndex];
+                            });
+                          },
+                        ),
+                      ),
+                      Flexible(
+                        flex: 1,
+                        child: TextFormField(
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                          initialValue: task.scorePoints.toString(),
+                          onChanged: (value) {
+                            setState(() {
+                              tasks[taskIndex] = task.copyWith(scorePoints: double.tryParse(value) ?? 0);
+                            });
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 )
               ],
             ),
-
             const SizedBox(
               height: 10,
             ),
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.blueGrey,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
               padding: const EdgeInsets.all(8),
@@ -186,17 +231,55 @@ class _TemplateCreateEditScreen extends ConsumerState<TemplateCreateEditScreen> 
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    task.source?.join('') ?? '',
-                    style: const TextStyle(color: Colors.white),
+                  Flexible(
+                    flex: 7,
+                    child: TextFormField(
+                      initialValue: task.source?.join('') ?? '',
+                      maxLines: null,
+                      decoration: const InputDecoration(border: OutlineInputBorder()),
+                      style: const TextStyle(color: Colors.black),
+                      onChanged: (source) {
+                        setState(() {
+                          tasks[taskIndex] = task.copyWith(source: source.split('\n'));
+                        });
+                      },
+                    ),
                   ),
-                  Checkbox(
-                    value: task.isCheckSource,
-                    onChanged: (checked) {
-                      setState(() {
-                        tasks[taskIndex] = task.copyWith(isCheckSource: checked ?? false);
-                      });
-                    },
+                  Flexible(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Checkbox(
+                              value: task.isCheckSource,
+                              onChanged: (checked) {
+                                setState(() {
+                                  tasks[taskIndex] = task.copyWith(isCheckSource: checked ?? false, isCheckPlag: (checked ?? false) ? false : null);
+                                });
+                              },
+                            ),
+                            Text("Проверять исходный код", style: TextStyle(color: Colors.black),),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Checkbox(
+                              value: task.isCheckPlag,
+                              onChanged: (checked) {
+                                setState(() {
+                                  tasks[taskIndex] = task.copyWith(isCheckPlag: checked ?? false, isCheckSource: (checked ?? false) ? false : null);
+                                });
+                              },
+                            ),
+                            Text("Проверять на плагиат", style: TextStyle(color: Colors.black),),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -207,7 +290,7 @@ class _TemplateCreateEditScreen extends ConsumerState<TemplateCreateEditScreen> 
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.black54,
+                color: Color.fromARGB(255, 60, 60, 60),
                 borderRadius: BorderRadius.circular(12),
               ),
               padding: const EdgeInsets.all(8),
@@ -215,17 +298,35 @@ class _TemplateCreateEditScreen extends ConsumerState<TemplateCreateEditScreen> 
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    task.answer?.join('') ?? '',
-                    style: const TextStyle(color: Colors.white),
+                  Flexible(
+                    flex: 7,
+                    child: TextFormField(
+                      initialValue: task.answer?.join('') ?? '',
+                      maxLines: null,
+                      decoration: const InputDecoration(border: OutlineInputBorder()),
+                      style: const TextStyle(color: Colors.white),
+                      onChanged: (answer) {
+                        setState(() {
+                          tasks[taskIndex] = task.copyWith(answer: answer.split('\n'));
+                        });
+                      },
+                    ),
                   ),
-                  Checkbox(
-                    value: task.isCheckAnswer,
-                    onChanged: (checked) {
-                      setState(() {
-                        tasks[taskIndex] = task.copyWith(isCheckAnswer: checked ?? false);
-                      });
-                    },
+                  Flexible(
+                    flex: 2,
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          value: task.isCheckAnswer,
+                          onChanged: (checked) {
+                            setState(() {
+                              tasks[taskIndex] = task.copyWith(isCheckAnswer: checked ?? false);
+                            });
+                          },
+                        ),
+                        Text("Проверять результат выполнения", style: TextStyle(color: Colors.white),),
+                      ],
+                    ),
                   ),
                 ],
               ),

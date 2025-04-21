@@ -11,7 +11,7 @@ class DeleteButton extends StatelessWidget {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text("Confirm delete?"),
+            title: const Text("Точно удалить?"),
             actions: <Widget>[
               TextButton(
                 style: TextButton.styleFrom(
@@ -21,7 +21,7 @@ class DeleteButton extends StatelessWidget {
                   onDelete();
                   Navigator.of(context).pop();
                 },
-                child: const Text('Yes'),
+                child: const Text('Да'),
               ),
               TextButton(
                 style: TextButton.styleFrom(
@@ -30,7 +30,7 @@ class DeleteButton extends StatelessWidget {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: const Text('No'),
+                child: const Text('Нет'),
               ),
             ],
           ),

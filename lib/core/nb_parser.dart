@@ -20,6 +20,7 @@ class NbParser {
       images: [],
       isCheckSource: false,
       isCheckAnswer: false,
+      isCheckPlag: false,
       scorePoints: 0,
     );
     for (var cell in nb.cells) {
@@ -53,6 +54,7 @@ class NbParser {
           answer: [],
           isCheckSource: false,
           isCheckAnswer: false,
+          isCheckPlag: false,
           scorePoints: 0,
         );
       }

@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:auto_ipynb/data/model/project.dart';
-import 'package:auto_ipynb/data/model/template.dart';
 import 'package:auto_ipynb/data/repository/project_repository.dart';
 import 'package:auto_ipynb/util/directory.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

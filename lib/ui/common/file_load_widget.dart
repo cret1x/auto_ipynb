@@ -30,18 +30,18 @@ class _FileLoadWidgetState extends State<FileLoadWidget> {
           visible: _selectedFile == null,
           child: ElevatedButton(
             onPressed: selectFile,
-            child: Text("Select file"),
+            child: const Text("Выбрать файл"),
           ),
         ),
         Visibility(
           visible: _selectedFile != null,
-          child: Text("Selected file: ${path.basename(_selectedFile?.path ?? "a.a")}"),
+          child: Text("Выбранный файл: ${path.basename(_selectedFile?.path ?? "a.a")}"),
         ),
         Visibility(
           visible: _selectedFile != null,
           child: ElevatedButton(
             onPressed: clearFile,
-            child: Text("Clear file"),
+            child: const Text("Очистить"),
           ),
         ),
       ],
@@ -65,6 +65,7 @@ class _FileLoadWidgetState extends State<FileLoadWidget> {
     setState(() {
       _selectedFile = null;
     });
+    widget.onFileCleared();
   }
 
 }

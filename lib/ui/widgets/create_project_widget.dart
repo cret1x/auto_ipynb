@@ -4,14 +4,10 @@ import 'package:auto_ipynb/core/nb_env.dart';
 import 'package:auto_ipynb/data/model/project.dart';
 import 'package:auto_ipynb/data/model/template.dart';
 import 'package:auto_ipynb/state/projects_provider.dart';
-import 'package:auto_ipynb/state/templates_provider.dart';
-import 'package:auto_ipynb/ui/common/exception_widget.dart';
 import 'package:auto_ipynb/ui/common/file_load_widget.dart';
 import 'package:auto_ipynb/ui/common/template_select_widget.dart';
 import 'package:auto_ipynb/ui/screens/project_creation_screen.dart';
 import 'package:auto_ipynb/ui/screens/project_screen.dart';
-import 'package:auto_ipynb/ui/screens/template_create_screen.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,6 +21,7 @@ class CreateProjectWidget extends ConsumerStatefulWidget {
 class _CreateProjectWidgetState extends ConsumerState<CreateProjectWidget> {
   File? _sourceFile;
   Template? _selectedTemplate;
+  String? error;
 
   @override
   Widget build(BuildContext context) {
@@ -38,17 +35,19 @@ class _CreateProjectWidgetState extends ConsumerState<CreateProjectWidget> {
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'Create new project',
+              'Создать новый проект',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ),
-          const Text("Select file"),
+          const Text("Выбрать файл"),
+          const SizedBox(height: 10,),
           FileLoadWidget(
             extensions: const ['zip', 'ipynb'],
             onFileSelected: onWorkSelected,
             onFileCleared: onWorkCleared,
           ),
-          const Text("Select template"),
+          const SizedBox(height: 10,),
+          const Text("Выбрать шаблон"),
           TemplateSelectWidget(onTemplateSelected: (template) {
             setState(() {
               _selectedTemplate = template;
@@ -56,7 +55,11 @@ class _CreateProjectWidgetState extends ConsumerState<CreateProjectWidget> {
           }),
           ElevatedButton(
             onPressed: onCreatePressed,
-            child: const Text("Create"),
+            child: const Text("Создать"),
+          ),
+          Visibility(
+            visible: error != null,
+            child: Text("${error}", style: TextStyle(color: Colors.redAccent),),
           ),
         ],
       ),
@@ -97,6 +100,10 @@ class _CreateProjectWidgetState extends ConsumerState<CreateProjectWidget> {
           ),
         );
       }
+    } else {
+      setState(() {
+        error = "Выберите файл и шаблон";
+      });
     }
   }
 }

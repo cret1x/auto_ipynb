@@ -1,6 +1,5 @@
 import 'package:auto_ipynb/data/model/project.dart';
 import 'package:auto_ipynb/state/project_creation_provider.dart';
-import 'package:auto_ipynb/ui/screens/project_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

@@ -43,6 +43,14 @@ class NbRunner {
     }
   }
 
+  Future<bool> installLib(String lib) async {
+    try {
+      await NbEnv.installLibs(pip, workingDirectory, [lib]);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
   Future<void> checkAndCreateEnv() async {
     final Directory venvDir = Directory(path.join(workingDirectory, '.venv'));
@@ -51,44 +59,56 @@ class NbRunner {
     }
   }
 
-  Future<void> checkSimilarity() async {
-    final score = {};
-    for (int i = 0; i < works.length; i++) {
-      print('Work $i');
+  Future<Map<int, Map<int, List<double?>>>> checkSimilarity() async {
+    final score = <int, Map<int, List<double?>>>{};
 
-      for (int j = i + 1; j < works.length; j++) {
-        final scores = [];
-        print('Compare to $j');
-        final tasksA = works[i].tasks;
+    for (int i = 0; i < works.length; i++) {
+      score[i] = <int, List<double?>>{};
+    }
+
+    for (int i = 0; i < works.length; i++) {
+      final tasksA = works[i].tasks;
+
+      for (int j = 0; j < works.length; j++) {
+        if (i == j) continue;
+
         final tasksB = works[j].tasks;
+        print("Comparing work $i with work $j");
+
+        score[i]![j] = List.filled(tasksA.length, null);
+
         for (int k = 0; k < tasksA.length; k++) {
-          print('Task $k');
-          if (!tasksA[k].isCheckSource) {
-            var result = await Process.run(python, [
-              'plagiarism.py',
-              tasksA[k].source?.join('') ?? 'A',
-              tasksB[k].source?.join('') ?? 'B',
-            ]);
-            print(double.tryParse(result.stdout) ?? 0.0);
-            scores.add(double.tryParse(result.stdout) ?? 0.0);
-            print('Add');
+          if (template.tasks[k].isCheckPlag && k < tasksB.length) {
+            try {
+              var result = await Process.run(python, [
+                'plagiarism.py',
+                tasksA[k].source?.join('') ?? 'A',
+                tasksB[k].source?.join('') ?? 'B',
+              ]);
+              score[i]![j]![k] = double.tryParse(result.stdout);
+            } catch (e) {
+              print('Error comparing task $k between works $i and $j: $e');
+              score[i]![j]![k] = null;
+            }
+          } else {
+            score[i]![j]![k] = null;
           }
         }
-        score['$i-$j'] = scores;
       }
-
     }
+
     print(score);
+    return score;
   }
 
-  Future<bool> run(int workIndex) async {
-    var result = await Process.run(python, [
-      'executor.py',
-      path.join(workingDirectory, works[workIndex].notebookFilename),
-      kernelName
-    ]);
+  Future<String?> run(int workIndex) async {
+    var result = await Process.run(
+        python, ['executor.py', path.join(workingDirectory, works[workIndex].notebookFilename), kernelName]);
     print(result.stdout);
     print(result.stderr);
-    return true;
+    if (result.stderr.toString().isNotEmpty) {
+      return result.stderr;
+    }
+    return null;
   }
 }

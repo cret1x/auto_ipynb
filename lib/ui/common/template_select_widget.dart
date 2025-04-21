@@ -25,7 +25,7 @@ class _TemplateSelectWidgetState extends ConsumerState<TemplateSelectWidget> {
   Widget build(BuildContext context) {
     final templatesValue = ref.watch(templatesProvider);
     return SizedBox(
-      height: 200,
+      height: 180,
       child: SingleChildScrollView(
         child: templatesValue.when(
           data: _getTemplatesWrap,
@@ -47,9 +47,10 @@ class _TemplateSelectWidgetState extends ConsumerState<TemplateSelectWidget> {
             runSpacing: 8,
             children: templates.map(_getTemplateCard).toList(),
           ),
+          const SizedBox(height: 10,),
           ElevatedButton(
             onPressed: createTemplateModal,
-            child: const Text('Create new'),
+            child: const Text("Добавить шаблон"),
           ),
         ],
       ),
@@ -114,21 +115,21 @@ class _TemplateSelectWidgetState extends ConsumerState<TemplateSelectWidget> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text("Add new template"),
+          title: const Text("Создать новый шаблон"),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
                 textStyle: Theme.of(context).textTheme.labelLarge,
               ),
               onPressed: createEmptyTemplate,
-              child: const Text('Empty'),
+              child: const Text('Пустой'),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 textStyle: Theme.of(context).textTheme.labelLarge,
               ),
               onPressed: createFileTemplate,
-              child: const Text('From file'),
+              child: const Text('Из файла'),
             ),
           ],
         ),

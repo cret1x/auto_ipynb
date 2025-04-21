@@ -9,6 +9,7 @@ part of 'python_task.dart';
 PythonTask _$PythonTaskFromJson(Map<String, dynamic> json) => PythonTask(
       isCheckSource: json['isCheckSource'] as bool,
       isCheckAnswer: json['isCheckAnswer'] as bool,
+      isCheckPlag: json['isCheckPlag'] as bool,
       scorePoints: (json['scorePoints'] as num).toDouble(),
       description: (json['description'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -26,5 +27,6 @@ Map<String, dynamic> _$PythonTaskToJson(PythonTask instance) =>
       'answer': instance.answer,
       'isCheckSource': instance.isCheckSource,
       'isCheckAnswer': instance.isCheckAnswer,
+      'isCheckPlag': instance.isCheckPlag,
       'scorePoints': instance.scorePoints,
     };

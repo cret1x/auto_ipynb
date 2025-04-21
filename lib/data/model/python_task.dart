@@ -10,11 +10,13 @@ class PythonTask {
   final List<String>? images;
   final bool isCheckSource;
   final bool isCheckAnswer;
+  final bool isCheckPlag;
   final double scorePoints;
 
   PythonTask({
     required this.isCheckSource,
     required this.isCheckAnswer,
+    required this.isCheckPlag,
     required this.scorePoints,
     this.description,
     this.source,
@@ -33,6 +35,7 @@ class PythonTask {
     List<String>? images,
     bool? isCheckSource,
     bool? isCheckAnswer,
+    bool? isCheckPlag,
     double? scorePoints,
   }) {
     return PythonTask(
@@ -42,6 +45,7 @@ class PythonTask {
       images: images ?? this.images,
       isCheckSource: isCheckSource ?? this.isCheckSource,
       isCheckAnswer: isCheckAnswer ?? this.isCheckAnswer,
+      isCheckPlag: isCheckPlag ?? this.isCheckPlag,
       scorePoints: scorePoints ?? this.scorePoints,
     );
   }
