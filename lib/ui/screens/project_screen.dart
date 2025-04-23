@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:auto_ipynb/core/nb_runner.dart';
@@ -11,6 +12,9 @@ import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as path;
+
+import '../../core/nb_parser.dart';
 
 class ProjectScreen extends ConsumerStatefulWidget {
   final Project project;
@@ -25,6 +29,7 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
   late NbRunner runner;
   final libNameController = TextEditingController();
   final _nameEditingController = TextEditingController();
+  bool _isRunOnce = false;
   bool _isEditingName = false;
 
   @override
@@ -36,6 +41,7 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
       template: widget.project.template,
     );
     _nameEditingController.text = widget.project.name;
+    _isRunOnce = widget.project.lastRunTime != null;
     super.initState();
   }
 
@@ -64,13 +70,13 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                     _isEditingName = false;
                   });
                   await ref.read(projectsProvider.notifier).save(Project(
-                        id: widget.project.id,
-                        name: _nameEditingController.text,
-                        rootPath: widget.project.rootPath,
-                        studentWorks: widget.project.studentWorks,
-                        libraries: widget.project.libraries,
-                        template: widget.project.template,
-                      ));
+                      id: widget.project.id,
+                      name: _nameEditingController.text,
+                      rootPath: widget.project.rootPath,
+                      studentWorks: widget.project.studentWorks,
+                      libraries: widget.project.libraries,
+                      template: widget.project.template,
+                      lastRunTime: widget.project.lastRunTime));
                 },
                 icon: const Icon(Icons.check),
               )
@@ -141,8 +147,7 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                                 color: Colors.red,
                               ),
                           },
-                          subtitle: Text(
-                              "Результат: ${studentWork.tasks.map((task) => task.scorePoints).reduce((a, b) => a + b)}/${widget.project.template.maxScore}"),
+                          subtitle: Text("Результат: ${_getStudentScore(studentWork)}"),
                           onTap: () {
                             if (mounted) {
                               Navigator.push(
@@ -204,15 +209,18 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                         width: double.infinity,
                         child: TextFormField(
                           controller: libNameController,
-                          decoration: const InputDecoration(border: OutlineInputBorder()),
+                          decoration:
+                              const InputDecoration(border: OutlineInputBorder(), hintText: "Название библиотеки"),
                         ),
                       ),
                       const SizedBox(height: 10),
                       ActionButton(onClick: installLib, child: const Text("Установить библиотеку")),
                       const SizedBox(height: 10),
-                      ActionButton(onClick: startRunner, child: const Text("Запустить все")),
+                      ActionButton(onClick: startRunner, child: const Text("Запустить без проверки")),
                       const SizedBox(height: 10),
-                      ActionButton(onClick: checkOutputs, child: const Text("Проверить все")),
+                      ActionButton(onClick: runAndCheckOutputs, child: const Text("Запустить и проверить")),
+                      const SizedBox(height: 10),
+                      ActionButton(onClick: checkOutputs, child: const Text("Проверить ответы")),
                       const SizedBox(height: 10),
                       ActionButton(onClick: checkPlagiarism, child: const Text("Проверить на плагиат")),
                       const SizedBox(height: 10),
@@ -226,6 +234,16 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
         ),
       ),
     );
+  }
+
+  String _getStudentScore(StudentWork studentWork) {
+    if (studentWork.tasks.isEmpty) {
+      return "0.0/${widget.project.template.maxScore}";
+    }
+    if (!_isRunOnce) {
+      return "N/A";
+    }
+    return "${studentWork.tasks.map((task) => task.scorePoints).reduce((a, b) => a + b)}/${widget.project.template.maxScore}";
   }
 
   Future<void> checkPlagiarism() async {
@@ -264,11 +282,10 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
           widget.project.libraries.add('sentence-transformers');
         });
 
-      ref.read(projectsProvider.notifier).save(widget.project);
+        ref.read(projectsProvider.notifier).save(widget.project);
         showSimilarityDialog(await runner.checkSimilarity());
       }
     }
-
   }
 
   void showSimilarityDialog(Map<int, Map<int, List<double?>>> results) {
@@ -324,10 +341,12 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                                 child: DataTable(
                                   columns: [
                                     const DataColumn(label: Text('Сравнение с')),
-                                    ...List.generate(taskCount, (k) => DataColumn(
-                                      label: Text('Задание ${k + 1}'),
-                                      numeric: true,
-                                    )),
+                                    ...List.generate(
+                                        taskCount,
+                                        (k) => DataColumn(
+                                              label: Text('Задание ${k + 1}'),
+                                              numeric: true,
+                                            )),
                                   ],
                                   rows: comparedWorkIds.map((comparedWorkId) {
                                     final similarities = comparisons[comparedWorkId]!;
@@ -337,9 +356,7 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                                         ...List.generate(taskCount, (k) {
                                           final value = similarities[k];
                                           return DataCell(
-                                            Text(value != null
-                                                ? '${(value * 100).toStringAsFixed(1)}%'
-                                                : 'N/A'),
+                                            Text(value != null ? '${(value * 100).toStringAsFixed(1)}%' : 'N/A'),
                                           );
                                         }),
                                       ],
@@ -362,6 +379,11 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
     );
   }
 
+  Future<void> runAndCheckOutputs() async {
+    await startRunner();
+    await checkOutputs();
+  }
+
   Future<void> checkOutputs() async {
     for (int i = 0; i < widget.project.studentWorks.length; i++) {
       setState(() {
@@ -378,7 +400,18 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
         });
       }
     }
-    ref.read(projectsProvider.notifier).save(widget.project);
+    await ref.read(projectsProvider.notifier).save(Project(
+        id: widget.project.id,
+        name: widget.project.name,
+        rootPath: widget.project.rootPath,
+        studentWorks: widget.project.studentWorks,
+        libraries: widget.project.libraries,
+        template: widget.project.template,
+        lastRunTime: DateTime.now()));
+    setState(() {
+      _isRunOnce = true;
+    });
+    //await ref.read(projectsProvider.notifier).save(widget.project);
   }
 
   Future<void> startRunner() async {
@@ -391,6 +424,13 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
         setState(() {
           widget.project.studentWorks[i] =
               widget.project.studentWorks[i].copyWith(status: RunStatus.success, errors: err);
+          widget.project.studentWorks[i].tasks.clear();
+          var file = File(path.join(widget.project.rootPath, widget.project.studentWorks[i].notebookFilename));
+          var jsonString = file.readAsStringSync();
+          Map<String, dynamic> json = jsonDecode(jsonString);
+          final notebook = NbParser.parseJsonToNotebook(widget.project.studentWorks[i].notebookFilename, json);
+          final tasks = NbParser.getTasksFromNotebook(notebook);
+          widget.project.studentWorks[i].tasks.addAll(tasks);
         });
       } catch (e) {
         setState(() {

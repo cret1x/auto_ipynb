@@ -5,8 +5,8 @@ class Project {
   final String id;
   final String name;
   final String rootPath;
-  final List<StudentWork> studentWorks; // Notebooks
-  final List<String> libraries; // Notebooks
+  final List<StudentWork> studentWorks;
+  final List<String> libraries;
   final Template template;
   final DateTime? lastRunTime;
 

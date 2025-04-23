@@ -69,7 +69,7 @@ class _TemplateCreateEditScreen extends ConsumerState<TemplateCreateEditScreen> 
       id: widget.template?.id ?? uuid.v1(),
       name: _nameEditingController.text,
       tasks: tasks,
-      maxScore: tasks.map((task) => task.scorePoints).reduce((a, b) => a + b),
+      maxScore: tasks.isNotEmpty ? tasks.map((task) => task.scorePoints).reduce((a, b) => a + b) : 0,
     );
     await ref.read(templatesProvider.notifier).save(template);
   }

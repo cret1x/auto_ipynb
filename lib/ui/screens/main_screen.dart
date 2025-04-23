@@ -30,8 +30,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
                     child: Text(
                       'Все проекты',
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -64,7 +64,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         final project = projects[index];
         return ListTile(
           title: Text(project.name),
-          trailing: project.lastRunTime != null ? Text("Пследнее время запуска: ${project.lastRunTime}") : null,
+          subtitle: project.lastRunTime != null ? Text("Пследнее время проверки: ${project.lastRunTime!.toLocal()}") : null,
           onTap: () =>
           {
             if (mounted)

@@ -25,7 +25,7 @@ class _TemplateSelectWidgetState extends ConsumerState<TemplateSelectWidget> {
   Widget build(BuildContext context) {
     final templatesValue = ref.watch(templatesProvider);
     return SizedBox(
-      height: 180,
+      height: 300,
       child: SingleChildScrollView(
         child: templatesValue.when(
           data: _getTemplatesWrap,

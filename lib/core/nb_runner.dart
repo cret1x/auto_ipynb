@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:auto_ipynb/core/nb_env.dart';
+import 'package:auto_ipynb/core/nb_parser.dart';
 import 'package:auto_ipynb/data/model/student_work.dart';
 import 'package:auto_ipynb/data/model/template.dart';
 import 'package:auto_ipynb/util/directory.dart';
@@ -107,6 +108,9 @@ class NbRunner {
     print(result.stdout);
     print(result.stderr);
     if (result.stderr.toString().isNotEmpty) {
+      if (result.stderr.toString().contains("ModuleNotFoundError")) {
+        throw Exception(result.stderr);
+      }
       return result.stderr;
     }
     return null;

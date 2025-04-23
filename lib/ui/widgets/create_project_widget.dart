@@ -39,7 +39,7 @@ class _CreateProjectWidgetState extends ConsumerState<CreateProjectWidget> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ),
-          const Text("Выбрать файл"),
+          const Text("Работы студентов:"),
           const SizedBox(height: 10,),
           FileLoadWidget(
             extensions: const ['zip', 'ipynb'],
@@ -47,19 +47,23 @@ class _CreateProjectWidgetState extends ConsumerState<CreateProjectWidget> {
             onFileCleared: onWorkCleared,
           ),
           const SizedBox(height: 10,),
-          const Text("Выбрать шаблон"),
+          const Text("Шаблон:"),
           TemplateSelectWidget(onTemplateSelected: (template) {
             setState(() {
               _selectedTemplate = template;
             });
           }),
+          const SizedBox(height: 10,),
           ElevatedButton(
             onPressed: onCreatePressed,
-            child: const Text("Создать"),
+            child: const Text("Сохранить"),
           ),
-          Visibility(
-            visible: error != null,
-            child: Text("${error}", style: TextStyle(color: Colors.redAccent),),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Visibility(
+              visible: error != null,
+              child: Text("${error}", style: TextStyle(color: Colors.redAccent),),
+            ),
           ),
         ],
       ),
@@ -102,7 +106,7 @@ class _CreateProjectWidgetState extends ConsumerState<CreateProjectWidget> {
       }
     } else {
       setState(() {
-        error = "Выберите файл и шаблон";
+        error = "Выберите работы студентов и шаблон";
       });
     }
   }
