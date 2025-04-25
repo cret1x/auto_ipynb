@@ -1,5 +1,7 @@
+import 'package:auto_ipynb/core/nb_env.dart';
 import 'package:auto_ipynb/data/model/project.dart';
 import 'package:auto_ipynb/state/project_creation_provider.dart';
+import 'package:auto_ipynb/util/directory.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,33 +16,63 @@ class ProjectCreationScreen extends ConsumerStatefulWidget {
 
 class _ProjectCreationScreenState extends ConsumerState<ProjectCreationScreen> {
   String text = "";
+  String errorText = "";
+
+  @override
+  void initState() {
+    super.initState();
+    seq().then((v) {
+      Navigator.of(context).pop();
+    }, onError: (err) {
+      setState(() {
+        text = "Ошибка при создании: ";
+        errorText = err.toString();
+      });
+    });
+  }
+
+  Future<void> seq() async {
+
+      setState(() {
+        text = "Создание проекта...";
+      });
+      await Future.delayed(const Duration(seconds: 1));
+      setState(() {
+        text = "Получение Python";
+      });
+      final python = await getPythonExe();
+      await Future.delayed(const Duration(seconds: 1));
+      setState(() {
+        text = "Создание виртуального окружения...";
+      });
+
+      var (out, err) = await NbEnv.createPythonEnvironment(python, widget.project.rootPath);
+      setState(() {
+        text = "Установка библиотек...";
+        errorText = err;
+      });
+      await NbEnv.installKernel(widget.project.rootPath, widget.project.id);
+
+
+  }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(projectCreationProvider(widget.project), (prev, next) {
-      if (next.hasValue) {
-        print(next);
-        if (next.value == 'done') {
-          if (mounted) {
-            Navigator.pop(context);
-          }
-        }
-        setState(() {
-          text = next.value!;
-        });
-      }
-    });
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircularProgressIndicator(),
-            const SizedBox(
-              height: 10,
-            ),
-            Text(text),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(
+                height: 10,
+              ),
+              Text(text),
+              const SizedBox(height: 10,),
+              Text(errorText),
+            ],
+          ),
         ),
       ),
     );

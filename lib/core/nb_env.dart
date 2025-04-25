@@ -57,27 +57,31 @@ class NbEnv {
         status: RunStatus.pending);
   }
 
-  static Future<void> createPythonEnvironment(String pythonExe, String workingDirectory) async {
+  static Future<(String, String)> createPythonEnvironment(String pythonExe, String workingDirectory) async {
     final Directory venvDir = Directory(path.join(workingDirectory, '.venv'));
     if (!venvDir.existsSync()) {
       print('Creating pyhton environment');
-      await Process.run(pythonExe, ["-m", "venv", ".venv"], workingDirectory: workingDirectory);
+      var result = await Process.run(pythonExe, ["-m", "venv", ".venv"], workingDirectory: workingDirectory);
+      return (result.stdout.toString(), result.stderr.toString());
     }
+    return ("Ошибка", "Виртаульное окружение не найдено");
   }
 
-  static Future<void> installKernel(String workingDirectory, String kernelName) async {
+  static Future<(String, String)> installKernel(String workingDirectory, String kernelName) async {
     print('Installing kernel');
     final python = path.join(workingDirectory, '.venv', 'scripts', 'python');
     final pip = path.join(workingDirectory, '.venv', 'scripts', 'pip3');
     await installLibs(pip, workingDirectory, ['ipykernel', 'nbformat', 'nbclient']);
     print('Setting up Jupyter kernel...');
-    await Process.run(python,
+    var result = await Process.run(python,
         ['-m', 'ipykernel', 'install', '--user', '--name=$kernelName', '--display-name', 'Python ($kernelName)']);
+    return (result.stdout.toString(), result.stderr.toString());
   }
 
   static Future<void> installLibs(String pipExe, String workingDirectory, List<String> libs) async {
     print('Installing libraries: $libs');
-    await Process.run(pipExe, ['install', ...libs], workingDirectory: workingDirectory);
+
+    var result = await Process.run(pipExe, ['install', ...libs], workingDirectory: workingDirectory);
   }
 
 // static Future<List<String>> getInstalledLibs() async {
