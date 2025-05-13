@@ -84,6 +84,11 @@ class NbEnv {
     var result = await Process.run(pipExe, ['install', ...libs], workingDirectory: workingDirectory);
   }
 
+  static Future<bool> checkPythonExe(String pythonExe) async {
+    var result = await Process.run(pythonExe, ['--version']);
+    return result.stderr.toString().isEmpty;
+  }
+
 // static Future<List<String>> getInstalledLibs() async {
 //   await checkAndCreateEnv();
 //   print('Listing libraries...');

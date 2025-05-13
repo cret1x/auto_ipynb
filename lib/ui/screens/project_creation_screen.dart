@@ -40,7 +40,7 @@ class _ProjectCreationScreenState extends ConsumerState<ProjectCreationScreen> {
       setState(() {
         text = "Получение Python";
       });
-      final python = await getPythonExe();
+      final python = await getPythonExe() ?? "py";
       await Future.delayed(const Duration(seconds: 1));
       setState(() {
         text = "Создание виртуального окружения...";

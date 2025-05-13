@@ -56,7 +56,7 @@ class NbRunner {
   Future<void> checkAndCreateEnv() async {
     final Directory venvDir = Directory(path.join(workingDirectory, '.venv'));
     if (!venvDir.existsSync()) {
-      NbEnv.createPythonEnvironment(await getPythonExe(), workingDirectory);
+      NbEnv.createPythonEnvironment(await getPythonExe() ?? "py", workingDirectory);
     }
   }
 

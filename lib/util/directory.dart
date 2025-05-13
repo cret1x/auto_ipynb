@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<Directory> getAppDirectory() async {
   final Directory documentsDir = await getApplicationDocumentsDirectory();
@@ -40,6 +41,7 @@ Future<void> deleteProjectDirectory(String id) async {
   await projectDir.delete(recursive: true);
 }
 
-Future<String> getPythonExe() async {
-  return "py";
+Future<String?> getPythonExe() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString("python");
 }

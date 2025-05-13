@@ -8,7 +8,7 @@ final projectCreationProvider = StreamProviderFamily<String, Project>((ref, proj
   yield "Создание проекта...";
   await Future.delayed(const Duration(seconds: 1));
   yield "Получение Python";
-  final python = await getPythonExe();
+  final python = await getPythonExe() ?? "py";
   await Future.delayed(const Duration(seconds: 1));
   yield "Создание виртуального окружения...";
   await NbEnv.createPythonEnvironment(python, project.rootPath);
